@@ -246,7 +246,7 @@ func _physics_process(delta):
 				if (abs(forwards_backwards) > 0.1 and tail.is_colliding()):
 					var dir = camera_transform.basis.z
 					dir.y = 0.0
-					velocity = dir.normalized() * -forwards_backwards * max_speed * ARVRServer.world_scale
+					velocity = (dir * -forwards_backwards).normalized() * max_speed * ARVRServer.world_scale
 					#velocity = velocity.linear_interpolate(dir, delta * 100.0)
 			elif move_type == MOVEMENT_TYPE.MOVE_AND_STRAFE:
 				if ((abs(forwards_backwards) > 0.1 ||  abs(left_right) > 0.1) and tail.is_colliding()):
