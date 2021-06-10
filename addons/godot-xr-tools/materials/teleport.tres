@@ -1,6 +1,6 @@
 [gd_resource type="ShaderMaterial" load_steps=3 format=2]
 
-[ext_resource path="res://addons/godot-xr-tools/materials/teleport.shader" type="Shader" id=1]
+[ext_resource path="res://addons/godot-xr-tools/materials/teleport.gdshader" type="Shader" id=1]
 [ext_resource path="res://addons/godot-xr-tools/images/teleport_arrow.png" type="Texture" id=2]
 
 [resource]

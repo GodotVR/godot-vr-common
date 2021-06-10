@@ -1,55 +1,73 @@
-tool
-extends Spatial
+@tool
+extends Node3D
 
 signal pointer_entered
 signal pointer_exited
 
-export var enabled = true setget set_enabled
-export var screen_size = Vector2(3.0, 2.0) setget set_screen_size
-export var viewport_size = Vector2(300.0, 200.0) setget set_viewport_size
-export var transparent = true setget set_transparent
-export (PackedScene) var scene = null setget set_scene, get_scene
+@export var enabled = true:
+	set(new_value):
+		enabled = new_value
+		_update_enabled()
+@export var screen_size = Vector2(3.0, 2.0):
+	set(new_value):
+		screen_size = new_value
+		_update_screen_size()
+@export var viewport_size = Vector2(300.0, 200.0):
+	set(new_value):
+		viewport_size = new_value
+		_update_viewport_size()
+@export var transparent = true:
+	set(new_value):
+		transparent = new_value
+		_update_transparent()
+@export var scene : PackedScene = null:
+	set(new_value):
+		scene = new_value
+		_update_scene()
 
 # Need to replace this with proper solution once support for layer selection has been added
-export (int, LAYERS_3D_PHYSICS) var collision_layer = 15 setget set_collision_layer
+@export_flags_3d_physics var collision_layer = 15:
+	set(new_value):
+		collision_layer = new_value
+		_update_collision_layer()
 
 var is_ready = false
-var scene_node = null
+var scene_node : Variant = null
 
-func set_enabled(is_enabled: bool):
-	enabled = is_enabled
+func _update_enabled():
 	if is_ready:
-		$StaticBody/CollisionShape.disabled = !enabled
+		$StaticBody/CollisionShape3D.disabled = !enabled
 
-func set_screen_size(new_size: Vector2):
-	screen_size = new_size
+func _update_screen_size():
 	if is_ready:
 		$Screen.mesh.size = screen_size
 		$StaticBody.screen_size = screen_size
-		$StaticBody/CollisionShape.shape.extents = Vector3(screen_size.x * 0.5, screen_size.y * 0.5, 0.01)
+		$StaticBody/CollisionShape3D.shape.extents = Vector3(screen_size.x * 0.5, screen_size.y * 0.5, 0.01)
 
-func set_viewport_size(new_size: Vector2):
-	viewport_size = new_size
+func _update_viewport_size():
 	if is_ready:
-		$Viewport.size = new_size
-		$StaticBody.viewport_size = new_size
-		var material : SpatialMaterial = $Screen.get_surface_material(0)
-		material.albedo_texture = $Viewport.get_texture()
+		$Viewport.size = viewport_size
+		$StaticBody.viewport_size = viewport_size
+		var material : StandardMaterial3D = $Screen.get_surface_override_material(0)
+		if material:
+			material.albedo_texture = $Viewport.get_texture()
+		else:
+			print_debug("Couldn't access material")
 
-func set_transparent(new_transparent: bool):
-	transparent = new_transparent
+func _update_transparent():
 	if is_ready:
-		var material : SpatialMaterial = $Screen.get_surface_material(0)
-		material.flags_transparent = transparent
+		var material : StandardMaterial3D = $Screen.get_surface_override_material(0)
+		if material:
+			material.flags_transparent = transparent
+		else:
+			print_debug("Couldn't access material")
 		$Viewport.transparent_bg = transparent
 
-func set_collision_layer(new_layer: int):
-	collision_layer = new_layer
+func _update_collision_layer():
 	if is_ready:
 		$StaticBody.collision_layer = collision_layer
 
-func set_scene(new_scene: PackedScene):
-	scene = new_scene
+func _update_scene():
 	if is_ready:
 		# out with the old
 		if scene_node:
@@ -58,11 +76,8 @@ func set_scene(new_scene: PackedScene):
 
 		# in with the new
 		if scene:
-			scene_node = scene.instance()
+			scene_node = scene.instantiate()
 			$Viewport.add_child(scene_node)
-
-func get_scene():
-	return scene
 
 func get_scene_instance():
 	return scene_node
@@ -75,9 +90,9 @@ func connect_scene_signal(which, on, callback):
 func _ready():
 	# apply properties
 	is_ready = true
-	set_enabled(enabled)
-	set_screen_size(screen_size)
-	set_viewport_size(viewport_size)
-	set_scene(scene)
-	set_collision_layer(collision_layer)
-	set_transparent(transparent)
+	_update_enabled()
+	_update_screen_size()
+	_update_viewport_size()
+	_update_scene()
+	_update_collision_layer()
+	_update_transparent()

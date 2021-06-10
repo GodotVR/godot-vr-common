@@ -1,8 +1,8 @@
-extends Spatial
+extends Node3D
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	var controller : ARVRController = get_parent()
+	var controller : XRController3D = get_parent()
 	if controller:
 		var grip = controller.get_joystick_axis(JOY_VR_ANALOG_GRIP) * 2.5
 		var trigger = controller.get_joystick_axis(JOY_VR_ANALOG_TRIGGER) * 2.5
