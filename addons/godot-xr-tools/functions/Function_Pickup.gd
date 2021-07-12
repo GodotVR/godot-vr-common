@@ -1,4 +1,4 @@
-extends Area
+extends Area3D
 
 signal has_picked_up(what)
 signal has_dropped
@@ -22,24 +22,27 @@ enum Buttons {
 	VR_TRIGGER = 15
 }
 
-export var pickup_range = 0.5 setget set_pickup_range
-export var impulse_factor = 1.0
-export (Buttons) var pickup_button_id = Buttons.VR_GRIP
-export (Buttons) var action_button_id = Buttons.VR_TRIGGER
-export var max_samples = 5
+@export var pickup_range = 0.5:
+	set(new_value):
+		pickup_range = new_value
+		_update_pickup_range()
 
-var object_in_area = Array()
-var closest_object = null
-var picked_up_object = null
+@export var impulse_factor = 1.0
+@export var pickup_button_id: Buttons = Buttons.VR_GRIP
+@export var action_button_id: Buttons = Buttons.VR_TRIGGER
+@export var max_samples = 5
 
-var last_transform = Transform()
-var linear_velocities = Array()
-var angular_velocities = Array()
+var objects_in_area: Array
+var closest_object: Variant = null
+var picked_up_object: Variant = null
 
-func set_pickup_range(new_range):
-	pickup_range = new_range
-	if $CollisionShape:
-		$CollisionShape.shape.radius = pickup_range
+var last_transform: Transform3D
+var linear_velocities: Array
+var angular_velocities: Array
+
+func _update_pickup_range():
+	if $CollisionShape3D:
+		$CollisionShape3D.shape.radius = pickup_range
 
 func _get_linear_velocity():
 	var velocity = Vector3(0.0, 0.0, 0.0)
@@ -67,27 +70,27 @@ func _get_angular_velocity():
 
 func _on_Function_Pickup_entered(object):
 	# add our object to our array if required
-	if object.has_method('pick_up') and object_in_area.find(object) == -1:
-		object_in_area.push_back(object)
+	if object.has_method('pick_up') and objects_in_area.find(object) == -1:
+		objects_in_area.push_back(object)
 		_update_closest_object()
 
 func _on_Function_Pickup_exited(object):
 	# remove our object from our array
-	if object_in_area.find(object) != -1:
-		object_in_area.erase(object)
+	if objects_in_area.find(object) != -1:
+		objects_in_area.erase(object)
 		_update_closest_object()
 
 func _update_closest_object():
-	var new_closest_obj = null
-	if !picked_up_object:
-		var new_closest_distance = 1000
-		for o in object_in_area:
+	var new_closest_obj: Variant = null
+	if !picked_up_object and !objects_in_area.is_empty():
+		var new_closest_distance: float = 1000.0
+		for object in objects_in_area:
 			# only check objects that aren't already picked up
-			if o.is_picked_up() == false:
-				var delta_pos = o.global_transform.origin - global_transform.origin
+			if object.is_picked_up() == false:
+				var delta_pos = object.global_transform.origin - global_transform.origin
 				var distance = delta_pos.length()
 				if distance < new_closest_distance:
-					new_closest_obj = o
+					new_closest_obj = object
 					new_closest_distance = distance
 	
 	if closest_object != new_closest_obj:
@@ -132,18 +135,18 @@ func _on_button_pressed(p_button):
 		if picked_up_object and picked_up_object.has_method("action"):
 			picked_up_object.action()
 
-func _on_button_release(p_button):
+func _on_button_released(p_button):
 	if p_button == pickup_button_id:
 		if picked_up_object and picked_up_object.press_to_hold:
 			drop_object()
 
 func _ready():
-	get_parent().connect("button_pressed", self, "_on_button_pressed")
-	get_parent().connect("button_release", self, "_on_button_release")
+	get_parent().connect("button_pressed", _on_button_pressed)
+	get_parent().connect("button_released", _on_button_released)
 	last_transform = global_transform
 	
-	# re-assign now that our collision shape has been constructed
-	set_pickup_range(pickup_range)
+	# update now that our collision shape has been constructed
+	_update_pickup_range()
 
 func _process(delta):
 	# Calculate our linear velocity

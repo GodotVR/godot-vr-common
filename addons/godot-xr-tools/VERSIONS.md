@@ -1,3 +1,6 @@
+# 3.0
+- Ported XR tools to Godot 4
+
 # 2.1
 - added option to highlight object that can be picked up
 - added option to snap object to given location (if reset transform is true)

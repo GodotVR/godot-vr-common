@@ -1,7 +1,7 @@
-extends StaticBody
+extends StaticBody3D
 
-export var screen_size = Vector2(3.0, 2.0)
-export var viewport_size = Vector2(100.0, 100.0)
+@export var screen_size = Vector2(3.0, 2.0)
+@export var viewport_size = Vector2(100.0, 100.0)
 
 var vp = null
 var mouse_mask = 0
@@ -12,8 +12,8 @@ func _ready():
 
 # Convert intersection point to screen coordinate
 func global_to_viewport(p_at):
-	var t = $CollisionShape.global_transform
-	var at = t.xform_inv(p_at)
+	var t = $CollisionShape3D.global_transform
+	var at = t.inverse() * p_at
 	
 	# Convert to screen space
 	at.x = ((at.x / screen_size.x) + 0.5) * viewport_size.x

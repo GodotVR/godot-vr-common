@@ -2,16 +2,17 @@
 
 [ext_resource path="res://addons/godot-xr-tools/functions/Function_Pickup.gd" type="Script" id=1]
 
-
-[sub_resource type="SphereShape" id=1]
+[sub_resource type="SphereShape3D" id=1]
 radius = 0.5
 
-[node name="Function_Pickup" type="Area"]
-collision_mask = 2
+[node name="Function_Pickup" type="Area3D"]
+collision_mask = 4
 script = ExtResource( 1 )
 
-[node name="CollisionShape" type="CollisionShape" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource( 1 )
+script = null
+
 [connection signal="area_entered" from="." to="." method="_on_Function_Pickup_entered"]
 [connection signal="area_exited" from="." to="." method="_on_Function_Pickup_exited"]
 [connection signal="body_entered" from="." to="." method="_on_Function_Pickup_entered"]
